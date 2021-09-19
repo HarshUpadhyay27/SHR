@@ -43,7 +43,7 @@ const authCtrl = {
       await newUser.save();
 
       res.json({
-        msg: "Register Sucess!",
+        msg: "Register Success!",
         access_token,
         user: {
           ...newUser._doc,
@@ -80,7 +80,7 @@ const authCtrl = {
       });
 
       res.json({
-        msg: "Login Sucess!",
+        msg: "Login Success!",
         access_token,
         user: {
           ...user._doc,
