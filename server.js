@@ -10,6 +10,7 @@ app.use(cors());
 app.use(cookieParser());
 
 app.use('/api', require('./routes/authRouter'))
+app.use('/api', require('./routes/userRouter'))
 
 const URL = process.env.MONGODB_URL;
 mongoose
