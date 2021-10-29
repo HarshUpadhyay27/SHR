@@ -28,7 +28,14 @@ const postCtrl = {
         user: [...req.user.following, req.user._id],
       })
         .sort("-createdAt")
-        .populate("user likes", "avatar username fullname");
+        .populate("user likes", "avatar username fullname")
+        .populate({
+          path: "comments",
+          populate: {
+            path: "user likes",
+            select: "-password",
+          },
+        });
 
       res.json({
         msg: "Success!",
@@ -69,7 +76,8 @@ const postCtrl = {
         _id: req.params.id,
         likes: req.user._id,
       });
-      if (post.length>0) return res.status(500).json({ msg: "You likes this post" });
+      if (post.length > 0)
+        return res.status(500).json({ msg: "You likes this post" });
 
       await Posts.findOneAndUpdate(
         { _id: req.params.id },
