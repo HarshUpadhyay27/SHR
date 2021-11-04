@@ -1,4 +1,5 @@
 const Posts = require("../models/postModel");
+const Comments = require("../models/commentModel");
 
 class APIfeatures {
   constructor(query, queryString) {
@@ -105,12 +106,15 @@ const postCtrl = {
       if (post.length > 0)
         return res.status(500).json({ msg: "You likes this post" });
 
-      await Posts.findOneAndUpdate(
+      const like = await Posts.findOneAndUpdate(
         { _id: req.params.id },
         {
           $push: { likes: req.user._id },
         }
       );
+
+      if (!like)
+        return res.status(400).json({ msg: "This post does not exist." });
 
       res.json({ msg: "Like Post" });
     } catch (error) {
@@ -119,12 +123,15 @@ const postCtrl = {
   },
   unlikePost: async (req, res) => {
     try {
-      await Posts.findOneAndUpdate(
+      const like = await Posts.findOneAndUpdate(
         { _id: req.params.id },
         {
           $pull: { likes: req.user._id },
         }
       );
+
+      if (!like)
+        return res.status(400).json({ msg: "This post does not exist." });
 
       res.json({ msg: "UnLike Post" });
     } catch (error) {
@@ -155,6 +162,9 @@ const postCtrl = {
           },
         });
 
+      if (!post)
+        return res.status(400).json({ msg: "This post does not exist." });
+
       res.json({ post });
     } catch (error) {
       return res.status(500).json({ msg: error.message });
@@ -164,18 +174,30 @@ const postCtrl = {
     try {
       const features = new APIfeatures(
         Posts.find({
-          user: {$nin: [...req.user.following, req.user._id]},
+          user: { $nin: [...req.user.following, req.user._id] },
         }),
         req.query
       ).pagination();
-      const posts = await features.query
-        .sort("-createdAt")
+      const posts = await features.query.sort("-createdAt");
 
       res.json({
         msg: "Success!",
         result: posts.length,
         posts,
       });
+    } catch (error) {
+      return res.status(500).json({ msg: error.message });
+    }
+  },
+  deletePost: async (req, res) => {
+    try {
+      const post = await Posts.findOneAndDelete({
+        _id: req.params.id,
+        user: req.user._id,
+      });
+      await Comments.deleteMany({ _id: { $in: post.comments } });
+
+      res.json({ msg: "Deleted Post!" });
     } catch (error) {
       return res.status(500).json({ msg: error.message });
     }
