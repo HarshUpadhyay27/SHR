@@ -10,10 +10,11 @@ router
 router
   .route("/post/:id")
   .patch(auth, postCtrl.updatePost)
-  .get(auth, postCtrl.getUserPost);
+  .get(auth, postCtrl.getPost);
 
 router.patch("/post/:id/like", auth, postCtrl.likePost);
 router.patch("/post/:id/unlike", auth, postCtrl.unlikePost);
 router.get("/user_posts/:id", auth, postCtrl.getUserPosts);
+router.get("/post_discover", auth, postCtrl.getPostsDiscover);
 
 module.exports = router;
