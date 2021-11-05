@@ -55,14 +55,19 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    followers: [{
+    followers: [
+      {
         type: mongoose.Types.ObjectId,
-        ref: 'user'
-    }],
-    following: [{
+        ref: "user",
+      },
+    ],
+    following: [
+      {
         type: mongoose.Types.ObjectId,
-        ref: 'user'
-    }]
+        ref: "user",
+      },
+    ],
+    saved: [{ type: mongoose.Types.ObjectId, ref: "user" }],
   },
   {
     timestamps: true,

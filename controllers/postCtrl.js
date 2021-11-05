@@ -1,5 +1,6 @@
 const Posts = require("../models/postModel");
 const Comments = require("../models/commentModel");
+const Users = require("../models/userModel");
 
 class APIfeatures {
   constructor(query, queryString) {
@@ -179,7 +180,7 @@ const postCtrl = {
       const posts = await Posts.aggregate([
         { $match: { user: { $nin: newArr } } },
         { $sample: { size: Number(num) } },
-      ])
+      ]);
 
       res.json({
         msg: "Success!",
@@ -199,6 +200,64 @@ const postCtrl = {
       await Comments.deleteMany({ _id: { $in: post.comments } });
 
       res.json({ msg: "Deleted Post!" });
+    } catch (error) {
+      return res.status(500).json({ msg: error.message });
+    }
+  },
+  savePost: async (req, res) => {
+    try {
+      const user = await Users.find({
+        _id: req.user._id,
+        saved: req.params.id,
+      });
+      if (user.length > 0)
+        return res.status(500).json({ msg: "You saved this post" });
+
+      const save = await Users.findOneAndUpdate(
+        { _id: req.user._id },
+        {
+          $push: { saved: req.params.id },
+        }
+      );
+
+      if (!save)
+        return res.status(400).json({ msg: "This post does not exist." });
+
+      res.json({ msg: "Save Post" });
+    } catch (error) {
+      return res.status(500).json({ msg: error.message });
+    }
+  },
+  unSavePost: async (req, res) => {
+    try {
+      const save = await Users.findOneAndUpdate(
+        { _id: req.user._id },
+        {
+          $pull: { saved: req.params.id },
+        }
+      );
+
+      if (!save)
+        return res.status(400).json({ msg: "This post does not exist." });
+
+      res.json({ msg: "unSave Post" });
+    } catch (error) {
+      return res.status(500).json({ msg: error.message });
+    }
+  },
+  getSavePosts: async (req, res) => {
+    try {
+      const features = new APIfeatures(
+        Posts.find({ _id: { $in: req.user.saved } }),
+        req.query
+      ).pagination();
+
+      const savePosts = await features.query.sort("-createdAt");
+
+      res.json({
+        savePosts,
+        result: savePosts.length,
+      });
     } catch (error) {
       return res.status(500).json({ msg: error.message });
     }
