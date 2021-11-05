@@ -13,8 +13,9 @@ const userCtrl = {
   },
   getUser: async (req, res) => {
     try {
-      const user = await User.findById(req.params.id).select("-password")
-      .populate("followers following", "-password");
+      const user = await User.findById(req.params.id)
+        .select("-password")
+        .populate("followers following", "-password");
       if (!user) return res.status(400).json({ msg: "User does not exist" });
       res.json({ user });
     } catch (error) {
@@ -70,7 +71,7 @@ const userCtrl = {
         { new: true }
       );
 
-      res.json({msg: "Followed User"})
+      res.json({ msg: "Followed User" });
     } catch (error) {
       return res.status(500).json({ msd: error.message });
     }
@@ -92,7 +93,42 @@ const userCtrl = {
         { new: true }
       );
 
-      res.json({msg: "UnFollow User"})
+      res.json({ msg: "UnFollow User" });
+    } catch (error) {
+      return res.status(500).json({ msd: error.message });
+    }
+  },
+  suggestionsUser: async (req, res) => {
+    try {
+      const newArr = [...req.user.following, req.user._id];
+
+      const num = req.query.num || 10;
+
+      const users = await User.aggregate([
+        { $match: { _id: { $nin: newArr } } },
+        { $sample: { size: Number(num) } },
+        {
+          $lookup: {
+            from: "users",
+            localField: "followers",
+            foreignField: "_id",
+            as: "followers",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "following",
+            foreignField: "_id",
+            as: "following",
+          },
+        },
+      ]).project("-password");
+
+      return res.json({
+        users,
+        result: users.length,
+      });
     } catch (error) {
       return res.status(500).json({ msd: error.message });
     }
