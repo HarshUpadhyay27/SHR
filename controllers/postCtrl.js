@@ -32,7 +32,10 @@ const postCtrl = {
       await newPost.save();
       res.json({
         msg: "Create Post",
-        newPost,
+        newPost: {
+          ...newPost._doc,
+          user: req.user,
+        },
       });
     } catch (error) {
       return res.status(500).json({ msg: error.message });
@@ -199,7 +202,7 @@ const postCtrl = {
       });
       await Comments.deleteMany({ _id: { $in: post.comments } });
 
-      res.json({ msg: "Deleted Post!" });
+      res.json({ msg: "Deleted Post!", newPost: { ...post, user: req.user } });
     } catch (error) {
       return res.status(500).json({ msg: error.message });
     }
