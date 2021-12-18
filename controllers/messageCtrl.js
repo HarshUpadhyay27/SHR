@@ -77,8 +77,8 @@ const messageCtrl = {
       const features = new APIfeatures(
         Messages.find({
           $or: [
-            { sender: req.user._id, recipients: req.params.id },
-            { sender: req.params.id, recipients: req.user._id },
+            { sender: req.user._id, recipient: req.params.id },
+            { sender: req.params.id, recipient: req.user._id },
           ],
         }),
         req.query
