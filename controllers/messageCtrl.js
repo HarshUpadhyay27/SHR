@@ -60,7 +60,7 @@ const messageCtrl = {
     try {
       const features = new APIfeatures(
         Conversations.find({
-          recipient: req.user._id,
+          recipients: req.user._id,
         }),
         req.query
       ).pagination();
